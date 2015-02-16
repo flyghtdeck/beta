@@ -1,0 +1,20 @@
+machine:
+    node:
+        version: "0.12.0"
+
+general:
+    branches:
+        only:
+            - master
+
+test:
+    post:
+        - docker info
+        - docker build -t quay.io/andrewrademacher/flight-deck
+
+deployment:
+    hub:
+        branch: master
+        commands:
+            - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS quay.io
+            - docker push quay.io/andrewrademacher/flight-deck
