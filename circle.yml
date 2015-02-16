@@ -7,7 +7,7 @@ machine:
 test:
     post:
         - docker info
-        - docker build -t quay.io/andrewrademacher/flight-deck
+        - docker build -t quay.io/andrewrademacher/flight-deck .
 
 deployment:
     hub:
