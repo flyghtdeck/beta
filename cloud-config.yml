@@ -1,0 +1,66 @@
+#cloud-config
+
+coreos:
+  etcd:
+    # generate a new token for each unique cluster from https://discovery.etcd.io/new
+    # WARNING: replace each time you 'vagrant destroy'
+    #discovery: https://discovery.etcd.io/<token>
+    addr: $public_ipv4:4001
+    peer-addr: $public_ipv4:7001
+  fleet:
+    public-ip: $public_ipv4
+  units:
+    - name: etcd.service
+      command: start
+    - name: fleet.service
+      command: start
+    - name: docker-tcp.socket
+      command: start
+      enable: true
+      content: |
+        [Unit]
+        Description=Docker Socket for the API
+
+        [Socket]
+        ListenStream=2375
+        Service=docker.service
+        BindIPv6Only=both
+
+        [Install]
+        WantedBy=sockets.target
+    - name: data-db.mount
+      command: start
+      content: |
+        [Mount]
+        What=/dev/sdb
+        Where=/data/db
+        Type=ext3
+    - name: mongo.service
+      command: start
+      content: |
+        [Unit]
+        Description=MongoDB Service
+        After=docker.service
+        Requires=docker.service
+
+        [Service]
+        TimeoutStartSec=0
+        ExecStartPre=/usr/bin/docker pull mongo:latest
+        ExecStart=/usr/bin/docker run --name mongo -p 27017:27017 -v /data/db:/data/db mongo:latest
+        ExecStop=/usr/bin/docker stop mongo
+        ExecStopPost=/usr/bin/docker rm mongo
+    - name: flight-deck.service
+      command: start
+      content: |
+        [Unit]
+        Description=Flight Deck Telescope Instance
+        After=mongo.service
+        Requires=mongo.service
+
+        [Service]
+        TimeoutStartSec=0
+        ExecStartPre=/usr/bin/docker login -e "andrewrademacher@gmail.com" -u "andrewrademacher+valorgroup" -p "TMF23RSNJQI6TB2L0E0C2OCKKHCXU0D34IPNCA63FVBNDCI3TMZM26Y2IP5HDDYB" https://quay.io/v1/
+        ExecStartPre=/usr/bin/docker pull quay.io/andrewrademacher/flight-deck:latest
+        ExecStart=/usr/bin/docker run --name flight-deck -p 80:3000 -e MONGO_URL=mongodb://$private_ipv4:27017/flight-deck quay.io/andrewrademacher/flight-deck
+        ExecStop=/usr/bin/docker stop flight-deck
+        ExecStopPost=/usr/bin/docker rm flight-deck
