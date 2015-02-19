@@ -1,6 +1,6 @@
 Meteor.startup(function() {
-    primaryNav.push({
+    secondaryNav.push({
         template: 'omniLink',
-        order: 180
+        order: 0
     });
 });
