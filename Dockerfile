@@ -7,7 +7,7 @@ RUN meteor build --directory dist
 RUN cd dist/bundle/programs/server && npm install
 
 ENV PORT 3000
-ENV ROOT_URL http://flyghtdeck.com
+ENV ROOT_URL http://www.flyghtdeck.com
 ENV MONGO_URL mongodb://db:27017/test
 
 EXPOSE 3000
