@@ -46,7 +46,7 @@ coreos:
         [Service]
         TimeoutStartSec=0
         ExecStartPre=/usr/bin/docker pull mongo:latest
-        ExecStart=/usr/bin/docker run --name mongo -p 27017:27017 -v /data/db:/data/db mongo:latest
+        ExecStart=/usr/bin/docker run --name mongo -p 27017:27017 -v /data/db:/data/db mongo mongod --smallfiles
         ExecStop=/usr/bin/docker stop mongo
         ExecStopPost=/usr/bin/docker rm mongo
     - name: flight-deck.service
